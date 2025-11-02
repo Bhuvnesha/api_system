@@ -1,0 +1,105 @@
+We are going to create an Angular application that uses the PHP API we built.
+Steps:
+
+Set up Angular environment
+
+Create services to handle API calls
+
+Create components for login, register, dashboard, profile, and logout
+
+Set up routing and guards for protected routes
+
+Use interceptors for attaching tokens to requests
+
+Handle responses and errors
+
+Let's break it down step by step.
+
+Step 1: Prerequisites
+
+Node.js and npm installed
+
+Angular CLI installed: npm install -g @angular/cli
+
+Step 2: Create a new Angular project
+ng new angular-auth-app
+cd angular-auth-app
+
+Step 3: Create the following components and services:
+
+Components:
+
+login
+
+register
+
+dashboard
+
+profile
+
+logout (could be just a function in a service, but we can have a component for message)
+
+Services:
+
+auth.service (for authentication related API calls and token management)
+
+user.service (for user profile and dashboard data)
+
+Interceptors:
+
+auth.interceptor (to attach token to requests)
+
+Guards:
+
+auth.guard (to protect routes that require authentication)
+
+Step 4: Let's generate these:
+
+ng generate component login
+ng generate component register
+ng generate component dashboard
+ng generate component profile
+ng generate component logout
+
+ng generate service services/auth
+ng generate service services/user
+
+ng generate interceptor interceptors/auth
+
+ng generate guard guards/auth
+
+Step 5: Set up the project structure and code.
+
+Let's start by setting up the AuthService.
+
+Step 5.1: Auth Service (auth.service.ts)
+
+We'll use HttpClient to make API calls and we'll store the token in local storage.
+
+Step 5.2: User Service (user.service.ts)
+
+For getting user profile and updating it.
+
+Step 5.3: Auth Interceptor (auth.interceptor.ts)
+
+We'll intercept every HTTP request and attach the token if available.
+
+Step 5.4: Auth Guard (auth.guard.ts)
+
+We'll check if the user is logged in (has a valid token) to allow access to certain routes.
+
+Step 5.5: Components
+
+We'll design the components and use the services.
+
+Step 5.6: Routing
+
+We'll set up the routes in app-routing.module.ts.
+
+Step 5.7: Update app.module.ts to include necessary imports.
+
+Let's write the code for each part.
+
+Note: We assume the PHP API is running at http://localhost/php-auth-api (update accordingly)
+
+Let's start with the AuthService.

@@ -1,0 +1,51 @@
+We are going to create a simple PHP API without using any framework.
+We'll use plain PHP and MySQL for database.
+
+Steps:
+
+Create a database and a table for users.
+
+Create a connection to the database.
+
+Create APIs for:
+
+Register (POST): to register a new user.
+
+Login (POST): to log in a user and return a token (we'll use a simple token for demonstration, not JWT).
+
+Dashboard (GET): to get user details (protected by token).
+
+Profile (GET and PUT): to view and update user profile (protected by token).
+
+Logout (POST): to invalidate the token.
+
+We'll use a simple token-based authentication. We'll store the token in the database and check it for protected endpoints.
+
+Note: This is a simple example and not for production without further security measures.
+
+Let's assume we have a database named php_api and a table users
+
+CREATE TABLE users (
+id INT AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(100),
+email VARCHAR(100) UNIQUE,
+password VARCHAR(255),
+token VARCHAR(255) NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+We'll create the following files:
+
+config.php: for database connection.
+
+register.php: for user registration.
+
+login.php: for user login.
+
+dashboard.php: for dashboard data.
+
+profile.php: for getting and updating profile.
+
+logout.php: for logging out.
+
+We'll use JSON for input and output.
