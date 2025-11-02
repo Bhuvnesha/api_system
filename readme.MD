@@ -43,6 +43,13 @@ example:
 	"password": "123456"
 	}
 
+	Response:
+
+	{
+	  "message": "User created successfully.",
+	  "user_id": 1
+	}
+
 # Login → Get authentication token
 Method: POST
 
@@ -52,6 +59,18 @@ Body (raw JSON):
 {
 "email": "john@example.com",
 "password": "123456"
+}
+
+Response:
+
+{
+  "message": "Login successful.",
+  "token": "eyJ1c2VyX2lkIjoxLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJ0aW1lc3RhbXAiOjE2MDAwMDAwMDB9",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
 }
 
 # Get Dashboard → Test protected route
@@ -64,6 +83,23 @@ Headers:
 Key: Authorization
 Value: Bearer <token_from_login_response>
 
+Response:
+
+{
+  "message": "Welcome to Dashboard!",
+  "user": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "created_at": "2023-01-01 00:00:00"
+  },
+  "stats": {
+    "total_visits": 150,
+    "last_login": "2023-12-01 10:30:00",
+    "account_status": "Active"
+  }
+}
+
+
 # Get Profile → View current profile
 
 For GET:
@@ -74,6 +110,18 @@ URL: http://localhost/php-auth-api/profile.php
 
 Headers:
 Authorization: Bearer <token>
+
+Response:
+
+{
+  "message": "Profile retrieved successfully.",
+  "profile": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "created_at": "2023-01-01 00:00:00"
+  }
+}
 
 
 Update Profile → Change user details
@@ -94,6 +142,15 @@ Body (raw JSON, example to update name and email):
 "email": "johnsmith@example.com"
 }
 
+Response:
+
+{
+  "name": "John Smith",
+  "email": "johnsmith@example.com",
+  "password": "newpassword123"
+}
+
+
 # Update Password → Change password
 
 Logout → End session
@@ -106,3 +163,9 @@ URL: http://localhost/php-auth-api/logout.php
 
 Headers:
 Authorization: Bearer <token>
+
+Response:
+
+{
+  "message": "Logged out successfully."
+}
