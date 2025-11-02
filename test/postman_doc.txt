@@ -1,0 +1,455 @@
+Postman Testing Guide for PHP Authentication API
+📋 Postman Collection Setup
+1. Create New Collection
+Open Postman
+
+Click New → Collection
+
+Name: PHP Auth API
+
+Description: Authentication API Testing
+
+2. Environment Variables (Recommended)
+Create an environment to store variables:
+
+Steps:
+
+Click Environments → Create New Environment
+
+Name: PHP Auth API Environment
+
+Add these variables:
+
+json
+{
+  "base_url": "http://localhost/php-auth-api",
+  "token": "",
+  "user_id": ""
+}
+Click Save
+
+🔄 API Requests Setup
+Request 1: Register User
+Details:
+
+Method: POST
+
+URL: {{base_url}}/register.php
+
+Headers:
+
+Content-Type: application/json
+
+Body (raw JSON):
+
+json
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "123456"
+}
+Tests Tab (JavaScript):
+
+javascript
+// Set environment variables
+if (pm.response.code === 201) {
+    const response = pm.response.json();
+    pm.environment.set("user_id", response.user_id);
+    pm.environment.set("user_email", "john@example.com");
+    
+    // Log success
+    console.log("User registered successfully:", response);
+}
+
+// Validate response
+pm.test("Status code is 201", function () {
+    pm.response.to.have.status(201);
+});
+
+pm.test("Response has success message", function () {
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("created successfully");
+});
+Request 2: Login User
+Details:
+
+Method: POST
+
+URL: {{base_url}}/login.php
+
+Headers:
+
+Content-Type: application/json
+
+Body (raw JSON):
+
+json
+{
+    "email": "john@example.com",
+    "password": "123456"
+}
+Tests Tab (JavaScript):
+
+javascript
+// Save token to environment
+if (pm.response.code === 200) {
+    const response = pm.response.json();
+    pm.environment.set("token", response.token);
+    pm.environment.set("user_id", response.user.id);
+    pm.environment.set("user_name", response.user.name);
+    
+    console.log("Login successful. Token saved:", response.token);
+}
+
+// Tests
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response contains token", function () {
+    const response = pm.response.json();
+    pm.expect(response.token).to.not.be.undefined;
+    pm.expect(response.user).to.not.be.undefined;
+});
+
+pm.test("Login message is correct", function () {
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("Login successful");
+});
+Request 3: Get Dashboard (Protected)
+Details:
+
+Method: GET
+
+URL: {{base_url}}/dashboard.php
+
+Headers:
+
+Authorization: Bearer {{token}}
+
+Tests Tab (JavaScript):
+
+javascript
+// Tests for protected route
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Dashboard data received", function () {
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("Dashboard");
+    pm.expect(response.user).to.not.be.undefined;
+    pm.expect(response.stats).to.not.be.undefined;
+});
+
+pm.test("User data matches", function () {
+    const response = pm.response.json();
+    pm.expect(response.user.email).to.equal(pm.environment.get("user_email"));
+});
+Request 4: Get Profile
+Details:
+
+Method: GET
+
+URL: {{base_url}}/profile.php
+
+Headers:
+
+Authorization: Bearer {{token}}
+
+Tests Tab (JavaScript):
+
+javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Profile data received", function () {
+    const response = pm.response.json();
+    pm.expect(response.profile).to.not.be.undefined;
+    pm.expect(response.profile.email).to.equal(pm.environment.get("user_email"));
+});
+
+// Save profile data for update tests
+if (pm.response.code === 200) {
+    const response = pm.response.json();
+    pm.environment.set("current_name", response.profile.name);
+    pm.environment.set("current_email", response.profile.email);
+}
+Request 5: Update Profile
+Details:
+
+Method: PUT
+
+URL: {{base_url}}/profile.php
+
+Headers:
+
+Authorization: Bearer {{token}}
+
+Content-Type: application/json
+
+Body (raw JSON):
+
+json
+{
+    "name": "John Smith Updated",
+    "email": "johnupdated@example.com"
+}
+Tests Tab (JavaScript):
+
+javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Profile updated successfully", function () {
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("updated successfully");
+});
+
+// Update environment with new email
+if (pm.response.code === 200) {
+    pm.environment.set("user_email", "johnupdated@example.com");
+}
+Request 6: Update Profile Password
+Details:
+
+Method: PUT
+
+URL: {{base_url}}/profile.php
+
+Headers:
+
+Authorization: Bearer {{token}}
+
+Content-Type: application/json
+
+Body (raw JSON):
+
+json
+{
+    "password": "newpassword123"
+}
+Tests Tab (JavaScript):
+
+javascript
+pm.test("Password updated successfully", function () {
+    pm.response.to.have.status(200);
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("updated successfully");
+});
+Request 7: Logout
+Details:
+
+Method: POST
+
+URL: {{base_url}}/logout.php
+
+Headers:
+
+Authorization: Bearer {{token}}
+
+Tests Tab (JavaScript):
+
+javascript
+pm.test("Logout successful", function () {
+    pm.response.to.have.status(200);
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("Logged out successfully");
+});
+
+// Clear token (optional)
+// pm.environment.set("token", "");
+Request 8: Test Invalid Token
+Details:
+
+Method: GET
+
+URL: {{base_url}}/dashboard.php
+
+Headers:
+
+Authorization: Bearer invalid_token_here
+
+Tests Tab (JavaScript):
+
+javascript
+pm.test("Invalid token rejected", function () {
+    pm.response.to.have.status(401);
+    const response = pm.response.json();
+    pm.expect(response.message).to.include("Access denied");
+});
+🚀 Running the Tests
+Manual Testing Sequence:
+Register → Create new user
+
+Login → Get authentication token
+
+Get Dashboard → Test protected route
+
+Get Profile → View current profile
+
+Update Profile → Change user details
+
+Update Password → Change password
+
+Logout → End session
+
+Automated Testing with Collection Runner:
+Click Runner in Postman
+
+Select your PHP Auth API collection
+
+Choose your environment
+
+Click Run PHP Auth API
+
+📝 Test Scenarios
+Scenario 1: Successful Registration & Login
+javascript
+// Pre-request Script for Registration
+pm.collectionVariables.set("test_email", "test_" + Date.now() + "@example.com");
+Scenario 2: Invalid Credentials
+Login with wrong password:
+
+json
+{
+    "email": "john@example.com",
+    "password": "wrongpassword"
+}
+Expected Response:
+
+json
+{
+    "message": "Login failed. Invalid password."
+}
+Scenario 3: Duplicate Registration
+Try registering same email twice:
+
+json
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "123456"
+}
+Expected Response:
+
+json
+{
+    "message": "Email already exists."
+}
+Scenario 4: Access Without Token
+Call dashboard without Authorization header
+
+Expected Response:
+
+json
+{
+    "message": "Access denied. Token required."
+}
+🎯 Postman Collection Export
+Export Your Collection:
+Click on your collection
+
+Click ... (three dots)
+
+Export
+
+Choose Collection v2.1
+
+Export
+
+Import the Collection:
+You can share the exported JSON file with your team.
+
+🔧 Environment Setup for Testing
+1. Local Development Setup:
+bash
+# Start your local server
+php -S localhost:8000
+
+# Update base_url in Postman environment
+base_url = "http://localhost:8000"
+2. Headers Configuration:
+Always include:
+
+Content-Type: application/json for POST/PUT requests
+
+Authorization: Bearer {{token}} for protected routes
+
+3. Pre-request Script Example:
+javascript
+// Generate unique email for each test run
+const timestamp = new Date().getTime();
+pm.environment.set("unique_email", `test${timestamp}@example.com`);
+📊 Response Validation Tests
+Common Test Cases:
+javascript
+// Check response time
+pm.test("Response time is less than 1000ms", function () {
+    pm.expect(pm.response.responseTime).to.be.below(1000);
+});
+
+// Check response format
+pm.test("Response has correct structure", function () {
+    const response = pm.response.json();
+    pm.expect(response).to.have.property('message');
+});
+
+// Check content type
+pm.test("Content-Type is application/json", function () {
+    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');
+});
+🐛 Troubleshooting Common Issues
+Issue 1: CORS Errors
+Solution: Ensure your PHP API includes CORS headers in config.php
+
+Issue 2: 404 Not Found
+Solution:
+
+Check your base URL
+
+Verify file paths are correct
+
+Ensure PHP files are in the right directory
+
+Issue 3: 401 Unauthorized
+Solution:
+
+Check if token is properly set in environment
+
+Verify token format: Bearer your_token_here
+
+Ensure user exists in database
+
+Issue 4: 500 Internal Server Error
+Solution:
+
+Check PHP error logs
+
+Verify database connection
+
+Ensure all required PHP extensions are enabled
+
+📱 Example Complete Test Flow
+Step 1: Environment Setup
+javascript
+// Pre-request Script for entire collection
+const baseUrl = pm.environment.get("base_url");
+console.log("Testing API at:", baseUrl);
+Step 2: Run Complete Flow
+Register new user → Save user_id
+
+Login with credentials → Save token
+
+Access dashboard with token → Verify data
+
+Get profile → Verify user info
+
+Update profile → Confirm changes
+
+Logout → Clear session
+
+This Postman guide provides everything you need to thoroughly test your PHP Authentication API. You can copy these configurations directly into Postman for immediate testing.
+
